@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite verbose="0" name="Failed suite [EntityManagerTest]">
+  <test name="Command line test" preserve-order="false">
+    <classes>
+      <class name="EntityManagerTest"/>
+    </classes>
+  </test> <!-- Command line test -->
+  <test name="Command line test(failed)">
+    <classes>
+      <class name="EntityManagerTest">
+        <methods>
+          <include name="testMergeWithExisting"/>
+          <include name="cleanEntityManager"/>
+          <include name="testMergeNewEntity"/>
+        </methods>
+      </class> <!-- EntityManagerTest -->
+    </classes>
+  </test> <!-- Command line test(failed) -->
+</suite> <!-- Failed suite [EntityManagerTest] -->
