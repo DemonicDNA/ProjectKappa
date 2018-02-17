@@ -1,39 +1,43 @@
 package deserialization;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import delta.Delta;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DeltaDeserializer implements Deserializer<String, Map<String,Object>>{
+public class DeltaDeserializer extends JsonDeserializer<Delta> {
 
     private final ObjectMapper objectMapper;
-
-
     @Inject
-    DeltaDeserializer(ObjectMapper objectMapper){
+    public DeltaDeserializer(ObjectMapper objectMapper){
         this.objectMapper = objectMapper;
     }
-
-    public Map<String, Object> deserialize(String serializedDelta) {
-        Map<String, Object> fieldNameToObjectMap = new HashMap<>();
-        try {
-            Map<String, Map.Entry<String, Class<?>>> propertyToJsonMap =
-                    objectMapper.readValue(serializedDelta, new TypeReference<Map<String, Map.Entry<String, Class<?>>>>() {});
-
-            propertyToJsonMap.forEach((propertyName, jsonRepToClassEntry) -> {
-                try {
-                    fieldNameToObjectMap.put(propertyName, objectMapper.readValue(jsonRepToClassEntry.getKey(), jsonRepToClassEntry.getValue()));
-                } catch (IOException e) {
-                    e.printStackTrace();
+    @Override
+    public Delta deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+        final TreeNode deltaAsTree = jsonParser.readValueAsTree();
+        Map<String, Object> propertyValueMap = new HashMap<>();
+        deltaAsTree.fieldNames().forEachRemaining(s -> {
+            try {
+                if(!s.contains("Class")) {
+                    propertyValueMap.put(s, objectMapper.readValue(deltaAsTree.get(s).toString(),
+                            objectMapper.readValue(deltaAsTree.get(s + "Class").toString(), Class.class)));
                 }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return fieldNameToObjectMap;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        return new Delta(propertyValueMap);
     }
 }

@@ -1,38 +1,30 @@
 package serialization;
 
-import jsonproviders.JsonRepresentationProvider;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import delta.Delta;
+import java.io.IOException;
 
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
+public class DeltaSerializer extends StdSerializer<Delta>  {
 
-public class DeltaSerializer implements Serializer<Map<String, ?>,String> {
-
-    private final JsonRepresentationProvider jsonRepresentationProvider;
-
-    @Inject
-    DeltaSerializer(JsonRepresentationProvider jsonRepresentationProvider){
-        this.jsonRepresentationProvider = jsonRepresentationProvider;
+    public DeltaSerializer(Class<Delta> t) {
+        super(t);
     }
 
-    public String serialize(Map<String, ?> propertyToObjectMap) {
-        Map<String, Map.Entry<String, Class<?>>> fieldNameToJsonRep = new HashMap<>();
-        propertyToObjectMap.keySet().forEach(fieldName -> {
-            Object updatedValue = propertyToObjectMap.get(fieldName);
-            fieldNameToJsonRep.put(fieldName,
-                    new AbstractMap.SimpleEntry<>(jsonRepresentationProvider.toJson(updatedValue),updatedValue.getClass()));
+    @Override
+    public void serialize(Delta delta, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        jsonGenerator.writeStartObject();
+        delta.getPropertyToValueMap().forEach((s, o) -> {
+            try {
+                jsonGenerator.writeFieldName(s);
+                jsonGenerator.writeObject(o);
+                jsonGenerator.writeFieldName(s + "Class");
+                jsonGenerator.writeObject(o.getClass());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         });
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.writeValueAsString(fieldNameToJsonRep);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return "";
+        jsonGenerator.writeEndObject();
     }
-
 }

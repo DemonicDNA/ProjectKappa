@@ -1,4 +1,7 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.inject.Guice;
+import delta.Delta;
 import deserialization.DeltaDeserializer;
 import entities.Gender;
 import entities.Person;
@@ -17,13 +20,16 @@ import java.util.Map;
 
 public class DeltaDeserializationTest {
 
-
-    private DeltaSerializer deltaSerializer = Guice.createInjector(new JsonParsingModule()).getInstance(DeltaSerializer.class);
-    private DeltaDeserializer deltaDeserializer = Guice.createInjector(new JsonParsingModule()).getInstance(DeltaDeserializer.class);
-
+    private ObjectMapper mapper = Guice.createInjector(new JsonParsingModule()).getInstance(ObjectMapper.class);
 
     @Test
     void testDeserialization() throws InvocationTargetException, IllegalAccessException, IOException {
+
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.addSerializer(Delta.class, new DeltaSerializer(Delta.class));
+        simpleModule.addDeserializer(Delta.class, new DeltaDeserializer(mapper));
+        mapper.registerModule(simpleModule);
+
         Person person = new Person();
         person.setName("Guy");
         person.setGender(Gender.MALE);
@@ -39,10 +45,10 @@ public class DeltaDeserializationTest {
         deltaMap.put("updateTime", testTime);
         deltaMap.put("gender", Gender.FEMALE);
 
-        String mapToSend = deltaSerializer.serialize(deltaMap);
-        Map<String, Object> deserializeMap;
+        Delta delta = new Delta(deltaMap);
+        Delta deserializedDelta = mapper.readValue(mapper.writeValueAsString(delta), Delta.class);
+        Map<String,?> deserializeMap = deserializedDelta.getPropertyToValueMap();
 
-        deserializeMap = deltaDeserializer.deserialize(mapToSend);
         Assert.assertEquals(deserializeMap.get("updateTime"), testTime);
         Assert.assertEquals(deserializeMap.get("age"), 30);
         Assert.assertEquals(deserializeMap.get("gender"), Gender.FEMALE);
