@@ -5,7 +5,7 @@ import delta.Delta;
 import deserialization.DeltaDeserializer;
 import entities.Gender;
 import entities.Person;
-import modules.JsonParsingModule;
+import modules.ObjectMapperModule;
 import org.apache.commons.beanutils.BeanUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class DeltaDeserializationTest {
 
-    private ObjectMapper mapper = Guice.createInjector(new JsonParsingModule()).getInstance(ObjectMapper.class);
+    private ObjectMapper mapper = Guice.createInjector(new ObjectMapperModule()).getInstance(ObjectMapper.class);
 
     @Test
     void testDeserialization() throws InvocationTargetException, IllegalAccessException, IOException {

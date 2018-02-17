@@ -1,6 +1,7 @@
 package entities;
 
 import java.time.OffsetDateTime;
+import java.util.EnumSet;
 import java.util.List;
 
 public class Person {
@@ -11,6 +12,7 @@ public class Person {
     private Gender gender;
     private Animal pet;
     private OffsetDateTime updateTime;
+    private EnumSet<PersonFeature> features;
 
     public Integer getAge() {
         return age;
@@ -58,5 +60,13 @@ public class Person {
 
     public void setUpdateTime(OffsetDateTime updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public EnumSet<PersonFeature> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(EnumSet<PersonFeature> features) {
+        this.features = features;
     }
 }

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
-public class JsonParsingModule extends AbstractModule {
+public class ObjectMapperModule extends AbstractModule {
     @Override
     protected void configure() {
     }
